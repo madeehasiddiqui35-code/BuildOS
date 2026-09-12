@@ -179,47 +179,42 @@ router.post(
             /* =================================================
                3. ARCHITECT
             ================================================= */
+/* =================================================
+   3. ARCHITECT + UI / UX IN PARALLEL
+================================================= */
 
-            console.log(
-                "🏗️ Architect Agent started..."
-            );
+console.log(
+    "🏗️ Architect + 🎨 UI/UX Agents started in parallel..."
+);
 
-            const architectRaw =
-                await architectAgent({
-                    idea,
-                    ceo,
-                    productManager,
-                });
+const [architectRaw, uiuxRaw] =
+    await Promise.all([
+        architectAgent({
+            idea,
+            ceo,
+            productManager,
+        }),
 
-            const architect =
-                normalizeAgentResult(
-                    architectRaw
-                );
+        uiuxAgent(idea),
+    ]);
 
-            console.log(
-                "✅ Architect completed"
-            );
+const architect =
+    normalizeAgentResult(
+        architectRaw
+    );
 
-            /* =================================================
-               4. UI / UX
-            ================================================= */
+const uiux =
+    normalizeAgentResult(
+        uiuxRaw
+    );
 
-            console.log(
-                "🎨 UI/UX Agent started..."
-            );
+console.log(
+    "✅ Architect completed"
+);
 
-            const uiuxRaw =
-                await uiuxAgent(idea);
-
-            const uiux =
-                normalizeAgentResult(
-                    uiuxRaw
-                );
-
-            console.log(
-                "✅ UI/UX completed"
-            );
-
+console.log(
+    "✅ UI/UX completed"
+);
             /* =================================================
                5. DEVELOPER
             ================================================= */
