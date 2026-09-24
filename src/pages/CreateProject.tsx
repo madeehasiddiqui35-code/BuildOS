@@ -1,3 +1,4 @@
+
 import {
     useEffect,
     useState,
@@ -60,22 +61,6 @@ function CreateProject() {
         useState<AgentKey | "Waiting">(
             "Waiting"
         );
-
-    /*
-     * IMPORTANT:
-     * This order now matches the ACTUAL backend
-     * agentRoutes.js execution order.
-     *
-     * 1. CEO
-     * 2. Product Manager
-     * 3. Architect
-     * 4. UI/UX
-     * 5. Developer
-     * 6. Code Review
-     * 7. Debate
-     * 8. Testing
-     * 9. QA & Delivery
-     */
 
     const stages: AgentKey[] = [
         "CEO",
@@ -253,10 +238,9 @@ function CreateProject() {
 
             setBackendComplete(true);
 
-            /*
-             * Save project immediately after
-             * successful blueprint generation.
-             */
+            /* =================================================
+               SAVE PROJECT
+            ================================================= */
 
             const newProject: Project = {
                 id: Date.now().toString(),
@@ -277,6 +261,11 @@ function CreateProject() {
                     new Date().toISOString(),
             };
 
+            console.log(
+                "💾 Saving project:",
+                newProject
+            );
+
             saveProject(
                 newProject
             );
@@ -291,6 +280,11 @@ function CreateProject() {
                     newProject
                 )
             );
+
+            console.log(
+                "✅ Project saved successfully."
+            );
+
         } catch (error: any) {
             console.error(
                 "❌ PROJECT GENERATION ERROR:",
@@ -305,10 +299,8 @@ function CreateProject() {
             setBackendComplete(false);
 
             alert(
-                error?.response
-                    ?.data?.error ||
-                    error?.message ||
-                    "Something went wrong while generating your blueprint."
+                error?.message ||
+                "Something went wrong while generating your blueprint."
             );
         }
     }
@@ -319,36 +311,60 @@ function CreateProject() {
 
     function handleViewBlueprint() {
         if (!blueprint) {
+            alert(
+                "Blueprint is not available yet."
+            );
+
             return;
         }
+
+        console.log(
+            "📖 Opening blueprint:",
+            blueprint
+        );
 
         const project =
             localStorage.getItem(
                 "buildos_selected_project"
             );
 
+        /*
+         * If the project was saved successfully,
+         * open the blueprint using the project ID.
+         */
+
         if (project) {
             try {
                 const parsed =
                     JSON.parse(project);
 
-                navigate(
-                    `/blueprint/${parsed.id}`,
-                    {
-                        state: {
-                            blueprint,
-                            project: parsed,
-                        },
-                    }
-                );
+                if (
+                    parsed?.id
+                ) {
+                    navigate(
+                        `/blueprint/${parsed.id}`,
+                        {
+                            state: {
+                                blueprint,
+                                project: parsed,
+                            },
+                        }
+                    );
 
-                return;
-            } catch {
+                    return;
+                }
+            } catch (error) {
                 console.warn(
-                    "Could not parse saved project."
+                    "Could not parse saved project:",
+                    error
                 );
             }
         }
+
+        /*
+         * Fallback:
+         * Open the blueprint directly using router state.
+         */
 
         navigate(
             "/blueprint",
@@ -382,10 +398,21 @@ function CreateProject() {
             const parsed =
                 JSON.parse(project);
 
+            if (!parsed?.id) {
+                throw new Error(
+                    "Project ID is missing."
+                );
+            }
+
             navigate(
                 `/build/${parsed.id}`
             );
-        } catch {
+        } catch (error) {
+            console.error(
+                "Could not open project:",
+                error
+            );
+
             alert(
                 "Could not open the project."
             );
