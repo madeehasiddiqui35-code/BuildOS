@@ -1,4 +1,6 @@
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL ||
+    "http://localhost:5000/api";
 
 /* =========================================================
    TYPES
@@ -11,6 +13,12 @@ type GenerateProjectResponse = {
     error?: string;
 };
 
+type GenerateImplementationResponse = {
+    success: boolean;
+    implementation?: any;
+    error?: string;
+};
+
 /* =========================================================
    GENERATE FULL BLUEPRINT
 ========================================================= */
@@ -20,9 +28,7 @@ export async function generateProject(
 ): Promise<any> {
 
     if (!idea || !idea.trim()) {
-        throw new Error(
-            "Project idea is required."
-        );
+        throw new Error("Project idea is required.");
     }
 
     console.log(
@@ -35,8 +41,7 @@ export async function generateProject(
             method: "POST",
 
             headers: {
-                "Content-Type":
-                    "application/json",
+                "Content-Type": "application/json",
             },
 
             body: JSON.stringify({
@@ -130,8 +135,7 @@ export async function generateImplementation(
             method: "POST",
 
             headers: {
-                "Content-Type":
-                    "application/json",
+                "Content-Type": "application/json",
             },
 
             body: JSON.stringify({
@@ -140,7 +144,7 @@ export async function generateImplementation(
         }
     );
 
-    let data: any;
+    let data: GenerateImplementationResponse;
 
     try {
         data = await response.json();
@@ -155,12 +159,20 @@ export async function generateImplementation(
         data
     );
 
+    /* =====================================================
+       BACKEND ERROR
+    ===================================================== */
+
     if (!response.ok) {
         throw new Error(
             data?.error ||
             `Implementation request failed with status ${response.status}.`
         );
     }
+
+    /* =====================================================
+       VALIDATE RESPONSE
+    ===================================================== */
 
     if (!data?.success) {
         throw new Error(
@@ -174,6 +186,10 @@ export async function generateImplementation(
             "Backend did not return implementation data."
         );
     }
+
+    /* =====================================================
+       SUCCESS
+    ===================================================== */
 
     console.log(
         "✅ IMPLEMENTATION RECEIVED:",
